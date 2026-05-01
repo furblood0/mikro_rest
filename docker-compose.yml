@@ -1,0 +1,188 @@
+version: '3.8'
+
+services:
+
+  # ==================== DATABASES ====================
+
+  menu-db:
+    image: postgres:16-alpine
+    container_name: menu-db
+    environment:
+      POSTGRES_DB: menudb
+      POSTGRES_USER: menuuser
+      POSTGRES_PASSWORD: menupass
+    ports:
+      - "5433:5432"
+    volumes:
+      - menu-db-data:/var/lib/postgresql/data
+    networks:
+      - restaurant-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U menuuser -d menudb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  order-db:
+    image: postgres:16-alpine
+    container_name: order-db
+    environment:
+      POSTGRES_DB: orderdb
+      POSTGRES_USER: orderuser
+      POSTGRES_PASSWORD: orderpass
+    ports:
+      - "5434:5432"
+    volumes:
+      - order-db-data:/var/lib/postgresql/data
+    networks:
+      - restaurant-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U orderuser -d orderdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kitchen-db:
+    image: postgres:16-alpine
+    container_name: kitchen-db
+    environment:
+      POSTGRES_DB: kitchendb
+      POSTGRES_USER: kitchenuser
+      POSTGRES_PASSWORD: kitchenpass
+    ports:
+      - "5435:5432"
+    volumes:
+      - kitchen-db-data:/var/lib/postgresql/data
+    networks:
+      - restaurant-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kitchenuser -d kitchendb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== EUREKA SERVER ====================
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    container_name: eureka-server
+    ports:
+      - "8761:8761"
+    networks:
+      - restaurant-network
+    healthcheck:
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:8761/actuator/health"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+
+  # ==================== API GATEWAY ====================
+
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+    networks:
+      - restaurant-network
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  # ==================== MENU SERVICE ====================
+
+  menu-service:
+    build:
+      context: ./menu-service
+      dockerfile: Dockerfile
+    container_name: menu-service
+    ports:
+      - "8081:8081"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      menu-db:
+        condition: service_healthy
+    networks:
+      - restaurant-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://menu-db:5432/menudb
+      - SPRING_DATASOURCE_USERNAME=menuuser
+      - SPRING_DATASOURCE_PASSWORD=menupass
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  # ==================== ORDER SERVICE ====================
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    container_name: order-service
+    ports:
+      - "8082:8082"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      order-db:
+        condition: service_healthy
+    networks:
+      - restaurant-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://order-db:5432/orderdb
+      - SPRING_DATASOURCE_USERNAME=orderuser
+      - SPRING_DATASOURCE_PASSWORD=orderpass
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  # ==================== KITCHEN SERVICE ====================
+
+  kitchen-service:
+    build:
+      context: ./kitchen-service
+      dockerfile: Dockerfile
+    container_name: kitchen-service
+    ports:
+      - "8083:8083"
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      kitchen-db:
+        condition: service_healthy
+    networks:
+      - restaurant-network
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://kitchen-db:5432/kitchendb
+      - SPRING_DATASOURCE_USERNAME=kitchenuser
+      - SPRING_DATASOURCE_PASSWORD=kitchenpass
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka-server:8761/eureka/
+
+  # ==================== FRONTEND ====================
+
+  restaurant-frontend:
+    build:
+      context: ./restaurant-frontend
+      dockerfile: Dockerfile
+    container_name: restaurant-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - api-gateway
+    networks:
+      - restaurant-network
+
+# ==================== VOLUMES & NETWORKS ====================
+
+volumes:
+  menu-db-data:
+  order-db-data:
+  kitchen-db-data:
+
+networks:
+  restaurant-network:
+    driver: bridge

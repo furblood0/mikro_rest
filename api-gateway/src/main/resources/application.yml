@@ -1,0 +1,51 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        # Menu Service Route
+        - id: menu-service
+          uri: lb://menu-service
+          predicates:
+            - Path=/menu/**
+          filters:
+            - StripPrefix=1
+
+        # Order Service Route
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/order/**
+          filters:
+            - StripPrefix=1
+
+        # Kitchen Service Route
+        - id: kitchen-service
+          uri: lb://kitchen-service
+          predicates:
+            - Path=/kitchen/**
+          filters:
+            - StripPrefix=1
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka-server:8761/eureka/
+    fetch-registry: true
+    register-with-eureka: true
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
