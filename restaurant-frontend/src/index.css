@@ -1137,22 +1137,185 @@ body {
 @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.3; transform: scale(0.7); } }
 @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
+/* ========== UTILITY: DASHBOARD GRIDS ========== */
+.dash-grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+/* ========== UTILITY: SCROLLABLE TABLE ========== */
+.table-wrap {
+  width: 100%;
+  overflow-x: auto;
+}
+.table-wrap .data-table { min-width: 560px; }
+
+/* ========== MOBILE MENU BUTTON & SIDEBAR EXTRAS ========== */
+.mobile-menu-btn {
+  display: none;
+  position: fixed;
+  top: 14px; left: 14px;
+  z-index: 90;
+  width: 42px; height: 42px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 1.3rem;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+}
+.mobile-menu-btn:hover { background: var(--bg-card-hover); }
+
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+  animation: fadeIn 0.2s ease;
+}
+
+.sidebar-close-btn {
+  display: none;
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 36px; height: 36px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 1.4rem;
+  line-height: 1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebar-footer {
+  padding: 20px;
+  border-top: 1px solid var(--border);
+  margin-top: auto;
+}
+
 /* ========== RESPONSIVE ========== */
+
+/* --- Tablet & küçük laptop (≤ 1024px): sidebar dar, ikon-only --- */
 @media (max-width: 1024px) {
   .sidebar { width: 70px; }
-  .sidebar-logo h1, .sidebar-logo span, .nav-label, .tech-tags, .tech-tag { display: none; }
+  .sidebar-logo h1, .sidebar-logo span, .nav-label, .tech-tags, .tech-tag,
+  .sidebar-footer { display: none; }
   .sidebar-logo { padding: 12px; text-align: center; }
   .nav-link { justify-content: center; padding: 12px; }
   .main-content { margin-left: 70px; }
+
   .kitchen-columns { grid-template-columns: 1fr; }
   .service-grid { grid-template-columns: repeat(3, 1fr); }
   .arch-banner { display: none; }
+
+  .dash-grid-3 { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* --- Mobil (≤ 768px): hamburger menü, tek sütun --- */
 @media (max-width: 768px) {
-  .sidebar { display: none; }
-  .main-content { margin-left: 0; padding: 16px; }
+  .mobile-menu-btn { display: flex; }
+
+  /* Sidebar artık off-canvas slide-in */
+  .sidebar {
+    width: 260px;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease-out;
+  }
+  .sidebar.open { transform: translateX(0); box-shadow: 4px 0 24px rgba(0,0,0,0.5); }
+  .sidebar.open + .sidebar-backdrop,
+  .sidebar-backdrop { display: block; }
+  /* Açık sidebar içinde tüm etiketler ve footer geri görünsün */
+  .sidebar.open .sidebar-logo h1,
+  .sidebar.open .sidebar-logo span,
+  .sidebar.open .nav-label,
+  .sidebar.open .tech-tags,
+  .sidebar.open .tech-tag,
+  .sidebar.open .sidebar-footer { display: block; }
+  .sidebar.open .sidebar-logo { padding: 0 24px 32px; text-align: left; }
+  .sidebar.open .sidebar-nav { padding: 0 12px; }
+  .sidebar.open .nav-link { justify-content: flex-start; padding: 12px 16px; }
+  .sidebar.open .sidebar-close-btn { display: flex; }
+  .sidebar.open .tech-tags { display: flex; }
+
+  .main-content { margin-left: 0; padding: 16px; padding-top: 70px; }
+
+  /* Page header dikey, küçük tipografi */
+  .page-header { flex-direction: column; align-items: stretch; }
+  .page-header h2 { font-size: 1.4rem; }
+  .page-header > div:last-child { flex-wrap: wrap; }
+
+  /* Search bar tam genişlik */
+  .search-bar { max-width: 100%; }
+
+  /* Grid'ler tek sütun */
   .menu-grid { grid-template-columns: 1fr; }
   .orders-grid { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: 1fr; }
+  .dash-grid-3 { grid-template-columns: 1fr; }
+  .service-grid { grid-template-columns: repeat(2, 1fr); }
+  .form-grid-2 { grid-template-columns: 1fr; }
+
+  /* Menü istatistik barı dikey */
+  .menu-stats-bar { flex-wrap: wrap; gap: 10px 16px; padding: 12px 16px; }
+  .menu-stat-sep { display: none; }
+
+  /* Cart full screen */
   .cart-sidebar { width: 100%; right: -100%; }
+  .cart-sidebar.open { right: 0; }
+
+  /* Modal mobile-friendly */
+  .modal {
+    width: 100%;
+    max-height: 95vh;
+    border-radius: var(--radius-lg);
+    margin: 0 8px;
+  }
+  .modal-header, .modal-body, .modal-footer { padding: 16px; }
+  .modal-footer { flex-direction: column-reverse; }
+  .modal-footer .btn { width: 100%; justify-content: center; }
+
+  /* Sipariş kartı padding küçült */
+  .order-card { padding: 16px; }
+  .order-actions { flex-direction: column; }
+  .order-actions .btn { width: 100%; justify-content: center; }
+
+  /* Toast tam genişlik */
+  .toast-container { left: 12px; right: 12px; bottom: 12px; }
+  .toast { min-width: 0; width: 100%; }
+}
+
+/* --- Küçük telefon (≤ 480px): daha sıkı tipografi/padding --- */
+@media (max-width: 480px) {
+  .main-content { padding: 12px; padding-top: 66px; }
+  .page-header h2 { font-size: 1.25rem; }
+  .page-header p { font-size: 0.8rem; }
+
+  .service-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+  .service-card { padding: 12px 8px; }
+  .service-card-icon { font-size: 1.2rem; }
+  .service-card-name { font-size: 0.68rem; }
+
+  /* Sayı/etiketleri sıkıştır */
+  .stat-card .stat-value { font-size: 1.6rem; }
+  .menu-card-hero { height: 90px; }
+  .menu-card-hero-emoji { font-size: 2.4rem; }
+  .menu-card-price { font-size: 1.15rem; }
+
+  /* Buton boyları */
+  .btn { padding: 9px 14px; font-size: 0.8rem; }
+  .btn-sm { padding: 5px 10px; font-size: 0.72rem; }
+
+  /* Kategori pill'leri daha küçük */
+  .category-pill { padding: 10px 14px; min-width: 76px; }
+  .category-pill-emoji { font-size: 1.3rem; }
 }

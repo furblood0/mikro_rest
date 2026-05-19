@@ -132,7 +132,7 @@ export default function Dashboard() {
       </div>
 
       {/* Ana stat kartları — 3 büyük */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 16 }}>
+      <div className="dash-grid-3" style={{ marginBottom: 16 }}>
         <BigStatCard
           gradient="linear-gradient(135deg, #e17055 0%, #fdcb6e 100%)"
           emoji="🔥"
@@ -157,7 +157,7 @@ export default function Dashboard() {
       </div>
 
       {/* İkincil stat kartları — 3 küçük */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
+      <div className="dash-grid-3" style={{ marginBottom: 28 }}>
         <SmallStatCard emoji="📋" value={stats.menuCount}    label="Menü Ürünü"     color="var(--info)" />
         <SmallStatCard emoji="📦" value={stats.orderCount}   label="Toplam Sipariş" color="var(--accent-light)" />
         <SmallStatCard emoji="👨‍🍳" value={stats.kitchenCount} label="Mutfak Kaydı"   color="var(--success)" />
@@ -177,6 +177,7 @@ export default function Dashboard() {
               <p>"Sipariş Ver" sayfasından ilk siparişi oluşturun</p>
             </div>
           ) : (
+            <div className="table-wrap">
             <table className="data-table">
               <thead>
                 <tr>
@@ -212,6 +213,7 @@ export default function Dashboard() {
                 })}
               </tbody>
             </table>
+            </div>
           )}
         </div>
       </div>

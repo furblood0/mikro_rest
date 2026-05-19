@@ -32,3 +32,11 @@ management:
     web:
       exposure:
         include: health,info
+
+logging:
+  level:
+    root: INFO
+    HTTP: INFO
+    com.restaurant.order: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} %-5level [order-service] [%thread] %logger{0} - %msg%n"
